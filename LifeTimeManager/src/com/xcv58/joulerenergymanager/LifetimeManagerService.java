@@ -93,8 +93,6 @@ public class LifetimeManagerService extends Service {
 									return;
 								}
 								
-								int diff = (soft - (soft-critical)/2);
-								Log.i(TAG,"check level: level = "+level+" range > "+diff);
 									
 								if(level > (soft - (soft-critical)/2)) {
 									if (defaultBrightness > 45){
@@ -278,6 +276,8 @@ public class LifetimeManagerService extends Service {
 		printLog();
 		if(doRateLimitBG)
 			setRateLimit();
+		if(doResetPriority)
+			setPriority();
 	
 	}
 	
@@ -315,8 +315,8 @@ public class LifetimeManagerService extends Service {
 					js.put("uid", u.getUid());
 					js.put("packagename", u.packageName);
 					js.put("realPriority", knob.getPriority(u.getUid()));
-					
-					if(u.getState() == false && knob.getPriority(u.getUid()) > 0) {
+					js.put("audio", u.getAudioEnergy());
+					if(u.getState() == false && knob.getPriority(u.getUid()) > -1 && u.getAudioEnergy() == 0.0) {
 						knob.resetPriority(u.getUid(), priority);
 						js.put("changedPriority", knob.getPriority(u.getUid()));
 					}
@@ -332,7 +332,6 @@ public class LifetimeManagerService extends Service {
 	private void setRateLimit() {
 		if(stats == null || stats.mUidArray.size() == 0)
 			return;
-		Log.i(TAG, "Set Rate Limit");
 		synchronized(stats) {
 			try{
 				for(int i=0; i< stats.mUidArray.size(); i++) {
@@ -347,7 +346,9 @@ public class LifetimeManagerService extends Service {
 						js.put("rateLimit", true);
 						js.put("wifiDataEnergy", u.getWifiDataEnergy());
 					}
+					Log.i(TAG,js.toString());
 				}
+				
 			}catch(JSONException e) {
 				Log.i(TAGE,"Error @ setRateLimit: "+e.getMessage());
 			}
@@ -371,7 +372,7 @@ public class LifetimeManagerService extends Service {
 				js.put("rateLimit", false);
 				js.put("wifiDataEnergy", u.getWifiDataEnergy());
 			}
-			
+			Log.i(TAG,js.toString());
 		}
 		}catch(JSONException e){
 			Log.i(TAGE, "Error @ resetRateLimit: "+e.getMessage());
@@ -398,7 +399,6 @@ public class LifetimeManagerService extends Service {
 	boolean willLifeEndSoon(int level) {
 		//load();
 		if(stats == null || stats.mSystemStats == null) {
-			Log.i(TAG, "NULL Stats");
 			return false;
 		}
 		double currDischargeRate = stats.mSystemStats.getCurrentDischargeRate(); 
@@ -412,30 +412,34 @@ public class LifetimeManagerService extends Service {
 			json.put("currentDischargeRate", currDischargeRate);
 			json.put("expectedDischargeRate", expectedDischargeRate);
 			json.put("uptime", stats.mSystemStats.getUptime());
+			
+			if ( actualTimeLeft < (expectedTimeLeft + 600000) ) {
+				if (actualTimeLeft < (lifetimeHrs*60*60*1000)/3) {			//remember to get rid of 10
+					
+					double hrs = Math.ceil(((double)actualTimeLeft / 3600000.0)); 
+					json.put("notify",true);
+					json.put("notifyHrs", hrs);
+					Notification mBuilder =
+					        new Notification.Builder(this)
+					        .setContentTitle("Reduce device usage")
+					        .setContentText("Battery will run out in next "+hrs+" hours")
+					        .setSmallIcon(R.drawable.ic_launcher)
+					        .setAutoCancel(true).build();
+					NotificationManager mNotificationManager = (NotificationManager) 
+							  getSystemService(NOTIFICATION_SERVICE); 
+					mNotificationManager.notify(0,mBuilder);
+					
+				}
+				stats = null;
+				return true;
+			}
+			
 			Log.i(TAG, json.toString());
+			
+			
 		}catch (JSONException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		if ( actualTimeLeft < (expectedTimeLeft + 600000) ) {
-			if (actualTimeLeft < (lifetimeHrs*60*60*1000)/3) {			//remember to get rid of 10
-				
-				double hrs = Math.ceil(((double)actualTimeLeft / 3600000.0)); 
-				Log.i(TAG,"hrs left="+ hrs);
-				Notification mBuilder =
-				        new Notification.Builder(this)
-				        .setContentTitle("Reduce device usage")
-				        .setContentText("Battery will run out in next "+hrs+" hours")
-				        .setSmallIcon(R.drawable.ic_launcher)
-				        .setAutoCancel(true).build();
-				NotificationManager mNotificationManager = (NotificationManager) 
-						  getSystemService(NOTIFICATION_SERVICE); 
-				mNotificationManager.notify(0,mBuilder);
-				
-			}
-			stats = null;
-			return true;
+			Log.i(TAGE, "Error @ willLifeEndSoon: "+e.getMessage());
 		}
 		stats = null;
 		return false;
@@ -458,7 +462,7 @@ public class LifetimeManagerService extends Service {
 			Log.i(TAG, json.toString());
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.i(TAGE, "Error @ printLog: "+e.getMessage());
 		}
 		
 	}
