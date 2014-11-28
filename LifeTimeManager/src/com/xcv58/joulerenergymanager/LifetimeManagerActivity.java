@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -129,10 +130,16 @@ public class LifetimeManagerActivity extends Activity {
 			e.printStackTrace();
 		}
 		//finish();
-		bt.setText("Energy Manager Started");
+		bt.setBackgroundColor(Color.TRANSPARENT);
+		bt.setClickable(false);
 	
 	}
-	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		bt.setBackgroundColor(Color.GRAY);
+		bt.setClickable(true);
+	}
 	@Override
 	public void onSaveInstanceState(Bundle savedInstanceState) {
 	  super.onSaveInstanceState(savedInstanceState);

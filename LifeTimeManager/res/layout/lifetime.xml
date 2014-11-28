@@ -45,10 +45,10 @@
 
     <Button
         android:id="@+id/button1"
-        android:layout_width="198dp"
+        android:layout_width="118dp"
         android:layout_height="wrap_content"
-        android:layout_x="42dp"
-        android:layout_y="270dp"
+        android:layout_x="98dp"
+        android:layout_y="276dp"
         android:text="Done" />
 
 </AbsoluteLayout>
