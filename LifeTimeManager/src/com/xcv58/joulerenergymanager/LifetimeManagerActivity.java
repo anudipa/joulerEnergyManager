@@ -25,9 +25,9 @@ public class LifetimeManagerActivity extends Activity {
 	EditText lifetime = null;
 	TextView description;
 	final String softDescription = "This is a soft threshold that indicates the battery level at which the energy manager will"
-			+ "start to monitor and manage energy consumption of your device. Ideally it should be between 80 and 40";
+			+ " start to monitor and manage energy consumption of your device. Ideally it should be between 80 and 40";
 	final String criticalDescription = "This is a critical threshold that indicates the battery level at which the energy manager"
-			+ "will aggressivly try to control energy consumption to reach the expected lifetime goals. Ideally it should be "
+			+ " will aggressivly try to control energy consumption to reach the expected lifetime goals. Ideally it should be "
 			+ "between 30 and 10";
 	final String lifetimeDescription = "This is the maximum number of hours you want your device battery to last in one discharging "
 			+ "cycle or in other words maximum number of hours between to full charging events when your device is charged to full 100%";

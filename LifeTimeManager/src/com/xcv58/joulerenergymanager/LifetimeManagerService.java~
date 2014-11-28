@@ -132,7 +132,6 @@ public class LifetimeManagerService extends Service {
 								}
 								brightness= 15;
 								cpufreq = 1190400;
-								priority = 15;
 								changeBrightness = true;
 								changeCpuFreq = true;
 								doRateLimitBG = true;
@@ -301,11 +300,11 @@ public class LifetimeManagerService extends Service {
 			return;
 		synchronized (stats) {
 			
-		/*	if(lastCheckedLevel < soft && lastCheckedLevel > critical)
+			if(lastCheckedLevel < soft && lastCheckedLevel > critical)
 				priority = 15;
 			else if(lastCheckedLevel <  critical)
 				priority = 19;
-		*/	
+			
 			try {
 				for(int i=0; i< stats.mUidArray.size(); i++) {
 					UidStats u = stats.mUidArray.valueAt(i);
